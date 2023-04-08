@@ -1,6 +1,7 @@
 import http from "node:http";
 import { json } from "./middlewares/json.js";
 import { routes } from "./routes.js";
+import { extractQueryParams } from "./utils/extract-query-param.js";
 
 /**
  * Query parameters: URL stateful -> Filtros, paginação, não-obrigatórios 
@@ -20,13 +21,20 @@ const server = http.createServer(async (request, response) => {
   
   await json(request, response)
 
-  const route = routes.find(route => route.method === method && route.path.test(url));
+  const route = routes.find(route => {
+    return route.method === method && route.path.test(url)
+  });
+
   if(route) {
     const routeParams = request.url.match(route.path)
-    console.log(routeParams)
+
+    const { query, ...params } = routeParams.groups
+    request.query = query ? extractQueryParams(query) : {}
+    request.params = params
+
+    request.params = { ...routeParams.groups }
     return route.handle(request, response)
   }
-
   response.writeHead(404).end("Rota não encontrada!");
 });
 
