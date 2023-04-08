@@ -8,7 +8,7 @@ export class Database {
   constructor() {
     fs.readFile(databasePath, 'utf8')
       .then(data => {
-        this.database = JSON.parse(data);
+        this.#database = JSON.parse(data);
       })
       .catch(() => {
         this.#persist();
@@ -21,7 +21,6 @@ export class Database {
 
   select(table, search) {
     let data = this.#database[table] ?? [];
-    console.log('select', data)
     
     if(search) {
       data = data.filter(row => {
